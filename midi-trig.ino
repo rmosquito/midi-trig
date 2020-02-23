@@ -23,7 +23,7 @@
 #define FIVE_VOLTS 0
 #define TEN_VOLTS 1
 
-boolean range = FIVE_VOLTS;
+boolean range = 0;
 
 boolean velocityMode = 0;
 
@@ -88,41 +88,40 @@ void setGateMode() {
 void setVelocityMode() {
     velocityMode = digitalRead(VELOCITY_TOGGLE_PIN);
     range = digitalRead(RANGE_TOGGLE_PIN);
+
 }
 
 void setup() {
-  // Serial.begin(115200);
-  // config pins as output so they don't float
+  SPI.begin();  
+  SPI.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE0));
+  SPI.endTransaction();
+
   pinMode (DAC0, OUTPUT);
-  digitalWriteFast(DAC0, HIGH);
+  digitalWrite(DAC0, HIGH);
   pinMode (DAC1, OUTPUT);
-  digitalWriteFast(DAC1, HIGH);
-  delay(1);
+  digitalWrite(DAC1, HIGH);
+  
   // config internal pulldowns for switches.
   pinMode (C_D_GATE_TOGGLE_PIN, INPUT_PULLDOWN);
   pinMode (F_G_A_GATE_TOGGLE_PIN, INPUT_PULLDOWN);
   pinMode (VELOCITY_TOGGLE_PIN, INPUT_PULLDOWN);
   pinMode (RANGE_TOGGLE_PIN, INPUT_PULLDOWN);
-  /*
-  SPI.setDataMode(SPI_MODE0);
-  SPI.setBitOrder(MSBFIRST);
-  SPI.setClockDivider(SPI_CLOCK_DIV4);
-  */
-  SPI.begin();
+
+
   // configure MAX 528s to "half buffered" mode
   byte byte_0 = B00000000;
   byte byte_1 = B10110110 ;
-  digitalWriteFast(DAC0, LOW);
+  digitalWrite(DAC0, LOW);
   SPI.transfer(byte_0);
   SPI.transfer(byte_1);
-  digitalWriteFast(DAC0, HIGH);
-  digitalWriteFast(DAC1, LOW);
+  digitalWrite(DAC0, HIGH);
+  digitalWrite(DAC1, LOW);
   SPI.transfer(byte_0);
   SPI.transfer(byte_1);
-  digitalWriteFast(DAC1, HIGH);
+  digitalWrite(DAC1, HIGH);
+  
   usbMIDI.setHandleNoteOff(OnNoteOff);
   usbMIDI.setHandleNoteOn(OnNoteOn);
-
 }
 
 void loop() {
@@ -130,6 +129,7 @@ void loop() {
   
   setGateMode();
   setVelocityMode();
+  
   for (int i=0; i <= 11; i++){
     // if it's set to trigger and it's been on for more than a millisecond, kill it.
     if ((voice[i].readGateMode() == TRIGGER) && (voice[i].readGate() == 1) && (micros() >= voice[i].readTimeOn() + 1000)) {

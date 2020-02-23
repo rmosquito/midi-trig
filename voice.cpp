@@ -16,15 +16,6 @@ void Voice::on(int velocity, unsigned long timeOn)
   _midiVelocity = velocity;
   _timeOn = timeOn;
   _gateStatus = 1;
-  /*
-  Serial.print("ON  - ");
-  Serial.print(_pin);
-  Serial.print(_dac);
-  Serial.print(" - ");
-  Serial.print(_midiVelocity);
-  Serial.print(" - ");
-  Serial.println(_timeOn);
-  */
   writeDAC();
 
 }
@@ -36,12 +27,6 @@ void Voice::off()
   _timeOn = 0;
   _midiVelocity = 0;
    writeDAC();
-
-  /*
-  Serial.print("OFF - ");
-  Serial.print(_pin);
-  Serial.println(_dac);
-  */
 }
 
 
@@ -49,8 +34,8 @@ void Voice::writeDAC() {
   byte byte_0 = 0;
   // picks DAC 0-7
   bitSet(byte_0, _dac);
-  byte byte_1 = _midiVelocity << 1 ;
-  digitalWriteFast(_pin, LOW);  
+  byte byte_1 = _midiVelocity;
+  digitalWrite(_pin, LOW);  
   /*
   Serial.print("PIN ");
   Serial.print(_pin);
@@ -59,10 +44,10 @@ void Voice::writeDAC() {
   Serial.print(" : ");
   Serial.println(byte_0,BIN);
   Serial.println(byte_1,BIN);
-  */
+ */
   SPI.transfer(byte_0);
   SPI.transfer(byte_1);
-  digitalWriteFast(_pin, HIGH);
+  digitalWrite(_pin, HIGH);
 }
 
 
